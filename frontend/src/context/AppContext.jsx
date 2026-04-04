@@ -14,7 +14,7 @@ export const AppProvider = ({ children }) => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [insightData, setInsightData] = useState(null);
-  
+
   // filters
   const [filters, setFilters] = useState({
     keyword: "",
@@ -152,7 +152,7 @@ export const AppProvider = ({ children }) => {
 
       return res.data.data;
     } catch (error) {
-      showToast("Failed to fetch user", "error");
+      console.log("Failed to fetch user", "error");
       return null;
     }
   };

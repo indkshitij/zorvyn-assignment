@@ -53,7 +53,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="w-full sticky top-0 z-50 border-b border-zinc-800">
+    <nav className="w-full sticky top-0 z-50 border-b border-zinc-800 backdrop-blur-3xl">
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
         <NavLink to="/" className="flex items-center gap-2">
           <img src={Logo} alt="Zorvyn" className="h-8" />
