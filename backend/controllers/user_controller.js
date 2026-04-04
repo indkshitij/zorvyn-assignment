@@ -21,7 +21,7 @@ export const createUser = async (req, res) => {
       });
     }
 
-    // pswd length check
+    // pswd check
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
@@ -29,7 +29,7 @@ export const createUser = async (req, res) => {
       });
     }
 
-    // user exist ?
+    // exist ?
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -48,6 +48,7 @@ export const createUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      isActive: true
     });
 
     const userObj = user.toObject();
@@ -81,7 +82,7 @@ export const getUsers = async (req, res) => {
 
     const query = {};
 
-// filter role
+    // filter role
     if (role) {
       query.role = role;
     }
@@ -99,7 +100,7 @@ export const getUsers = async (req, res) => {
     const skip = (Number(page) - 1) * Number(limit);
 
     const users = await User.find(query)
-      .select("-password") 
+      .select("-password")
       .skip(skip)
       .limit(Number(limit))
       .sort({ createdAt: -1 });
@@ -210,9 +211,8 @@ export const updateStatus = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: `Your account has been ${
-        isActive ? "activated" : "deactivated"
-      }`,
+      message: `Your account has been ${isActive ? "activated" : "deactivated"
+        }`,
       data: userObj,
     });
   } catch (error) {
@@ -256,7 +256,7 @@ export const getUserById = async (req, res) => {
 // delete Account
 export const deleteAccount = async (req, res) => {
   try {
-    const { id } = req.user; 
+    const { id } = req.user;
 
     const user = await User.findById(id);
 

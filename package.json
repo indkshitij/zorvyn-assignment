@@ -16,8 +16,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "dev": "nodemon backend/index.js",
+    "server": "node backend/index.js",
+    "client": "npm run dev --prefix frontend",
+    "start": "NODE_ENV=production node backend/index.js",
+    "build": "npm install && npm install --prefix frontend --include=dev && npm run build --prefix frontend"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

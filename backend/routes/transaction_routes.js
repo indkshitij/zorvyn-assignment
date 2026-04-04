@@ -11,4 +11,5 @@ router.get("/dashboard", protect, authorizeRoles("viewer","admin", "analyst"), g
 router.put("/update/:id", protect, authorizeRoles("admin"), updateTransaction);
 router.delete("/delete/:id", protect, authorizeRoles("admin"), deleteTransaction);
 router.get("/insights", protect, authorizeRoles("admin", "analyst"), getInsights);
+
 export default router;

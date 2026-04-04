@@ -65,7 +65,6 @@ export const getTransactions = async (req, res) => {
       sortDirection = "desc",
     } = req.query;
 
-    // convert to numbers (IMPORTANT)
     const pageNum = Number(page);
     const limitNum = Number(limit);
 
@@ -73,12 +72,10 @@ export const getTransactions = async (req, res) => {
       user: req.user._id,
     };
 
-    // type filter
     if (type && type !== "all") {
       query.type = type.toLowerCase();
     }
 
-    // category filter
     if (category && category !== "all") {
       query.category = category;
     }
@@ -93,7 +90,7 @@ export const getTransactions = async (req, res) => {
 
       if (endDate) {
         const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999); // include full day
+        end.setHours(23, 59, 59, 999);
         query.date.$lte = end;
       }
     }
@@ -117,10 +114,10 @@ export const getTransactions = async (req, res) => {
       [safeSortField]: sortDirection === "asc" ? 1 : -1,
     };
 
-    // pagination logic
+    // pagination
     const skip = (pageNum - 1) * limitNum;
 
-    // fetch data (OPTIMIZED)
+    // fetch data
     const transactions = await Transaction.find(query)
       .sort(sort)
       .skip(skip)
@@ -133,7 +130,6 @@ export const getTransactions = async (req, res) => {
     // infinite scroll helper
     const hasMore = pageNum * limitNum < total;
 
-    // response
     res.status(200).json({
       success: true,
       meta: {
@@ -349,7 +345,6 @@ export const getDashboard = async (req, res) => {
       },
     ]);
 
-    // fill missing data
     const map = new Map();
 
     rawDailyStats.forEach((item) => {
@@ -380,7 +375,7 @@ export const getDashboard = async (req, res) => {
       }
     }
 
-    // RECENT TRANSACTIONS
+    // recent txn
     const recentTransactions = await Transaction.find({ user: userId })
       .select("-__v")
       .sort({ createdAt: -1 })
@@ -427,28 +422,34 @@ export const getInsights = async (req, res) => {
     let totalExpense = 0;
 
     const categoryMap = {};
+    const transactionCountMap = {};
     const monthlyMap = {};
 
     transactions.forEach((tx) => {
       const { amount, type, category, date } = tx;
 
-      // income / expense totals
+
       if (type === "income") totalIncome += amount;
       else totalExpense += amount;
 
-      // category aggregation
-      if (!categoryMap[category]) {
-        categoryMap[category] = {
-          total: 0,
-          count: 0,
-        };
+      // all transactions
+      if (!transactionCountMap[category]) {
+        transactionCountMap[category] = 0;
       }
+      transactionCountMap[category] += 1;
 
+      // category only expenses
       if (type === "expense") {
-        categoryMap[category].total += amount;
-      }
+        if (!categoryMap[category]) {
+          categoryMap[category] = {
+            total: 0,
+            count: 0,
+          };
+        }
 
-      categoryMap[category].count += 1;
+        categoryMap[category].total += amount;
+        categoryMap[category].count += 1;
+      }
 
       // monthly grouping
       const month = new Date(date).toLocaleString("default", {
@@ -463,18 +464,45 @@ export const getInsights = async (req, res) => {
       monthlyMap[month][type] += amount;
     });
 
-    // top spending category
-    const topCategory = Object.entries(categoryMap).reduce(
-      (max, [cat, val]) =>
-        val.total > max.total ? { name: cat, ...val } : max,
-      { total: 0 }
+    // top spending category 
+    let topCategory = { name: null, total: 0, count: 0 };
+
+    if (Object.keys(categoryMap).length > 0) {
+      topCategory = Object.entries(categoryMap).reduce(
+        (max, [cat, val]) => {
+          if (val.total > max.total) {
+            return {
+              name: cat,
+              total: val.total,
+              count: val.count,
+            };
+          }
+          return max;
+        },
+        { name: null, total: 0, count: 0 }
+      );
+    }
+
+    // highest spending month
+    const highestSpendingMonth = Object.entries(monthlyMap).reduce(
+      (max, [month, val]) =>
+        val.expense > max.expense
+          ? { month, expense: val.expense }
+          : max,
+      { month: null, expense: 0 }
     );
 
-    // most transactions category
-    const mostTransactions = Object.entries(categoryMap).reduce(
-      (max, [cat, val]) =>
-        val.count > max.count ? { name: cat, ...val } : max,
-      { count: 0 }
+    // net savings
+    const netSavings = totalIncome - totalExpense;
+
+    const financialStatus =
+      netSavings >= 0 ? "saving" : "overspending";
+
+    // most txn
+    const mostTransactions = Object.entries(transactionCountMap).reduce(
+      (max, [cat, count]) =>
+        count > max.count ? { name: cat, count } : max,
+      { name: null, count: 0 }
     );
 
     // avg monthly spend
@@ -488,21 +516,18 @@ export const getInsights = async (req, res) => {
         : 0;
 
     // category breakdown
-    const totalExpenseOnly = totalExpense;
-
     const categoryBreakdown = Object.entries(categoryMap).map(
       ([cat, val]) => ({
         category: cat,
         amount: val.total,
         count: val.count,
         percentage:
-          totalExpenseOnly > 0
-            ? (val.total / totalExpenseOnly) * 100
+          totalExpense > 0
+            ? (val.total / totalExpense) * 100
             : 0,
       })
     );
 
-    // sort breakdown
     categoryBreakdown.sort((a, b) => b.amount - a.amount);
 
     // monthly chart data
@@ -514,14 +539,19 @@ export const getInsights = async (req, res) => {
       })
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: {
         summary: {
+          totalIncome,
+          totalExpense,
+          netSavings,
+          savingsRate,
+          financialStatus,
           topCategory,
           mostTransactions,
           avgMonthlySpend,
-          savingsRate,
+          highestSpendingMonth,
         },
         chart: chartData,
         breakdown: categoryBreakdown,
@@ -530,7 +560,7 @@ export const getInsights = async (req, res) => {
   } catch (error) {
     console.error("Insights Error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Internal Server Error",
     });

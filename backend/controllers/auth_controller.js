@@ -35,14 +35,6 @@ export const login = async (req, res) => {
       });
     }
 
-    
-    if (!user.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: "User account is inactive",
-      });
-    }
-
     const token = generateToken(user);
 
     const userData = {
@@ -50,6 +42,7 @@ export const login = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      isActive:user.isActive
     };
 
     
