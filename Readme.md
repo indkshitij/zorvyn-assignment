@@ -105,7 +105,7 @@ This project is **backend-focused**, emphasizing clean architecture, role-based 
 
 ---
 
-## 📂 Folder Structure
+##  Folder Structure
 
 ```
 
@@ -136,7 +136,7 @@ zorvyn-assignment/
 
 ---
 
-## ⚙️ Installation & Setup
+## Installation & Setup
 
 
 ### Prerequisites
@@ -291,12 +291,63 @@ Authorization: Bearer <your_token>
 
 ## Screenshots / UI Preview
 
-> *(Add screenshots here for better presentation)*
+### Home Page
+![Home](./images/home.png)
 
-* Dashboard Overview
-* Transactions Table
-* Insights Charts
-* Profile Page
+---
+
+### Login Page
+![Login](./images/login.png)
+
+---
+
+### Signup Page
+![Signup](./images/signup.png)
+
+---
+
+### Dashboard Overview
+![Dashboard](./images/dashboard.png)
+
+---
+
+### Transactions Page
+![Transactions](./images/dashboardTxn.png)
+
+---
+
+### Add Transaction
+![Add Transaction](./images/addTxn.png)
+
+---
+
+### Edit Transaction
+![Edit Transaction](./images/editTxn.png)
+
+---
+
+### Delete Modal
+![Delete Modal](./images/deleteModal.png)
+
+---
+
+### Insights Page
+![Insights](./images/insights.png)
+
+---
+
+###  Profile Page
+![Profile](./images/dashboardProfile.png)
+
+---
+
+### Inactive User Screen
+![Inactive](./images/inactive.png)
+
+---
+
+### Error 404 Page
+![Error 404](./images/error404.png)
 
 ---
 
